@@ -60,11 +60,11 @@ vaultguard/
 
 | | | |
 |:---:|:---:|:---:|
-| ![VaultGuard Login](screenshots/Screenshot1.png) | ![VaultGuard Vault](screenshots/Screenshot2.png) | ![VaultGuard Settings](screenshots/Screenshot3.png) |
+| ![VaultGuard Login](screenshots/Desktop-screenshots/Screenshot1.png) | ![VaultGuard Vault](screenshots/Desktop-screenshots/Screenshot2.png) | ![VaultGuard Settings](screenshots/Desktop-screenshots/Screenshot3.png) |
 | *Login / Unlock screen* | *Main vault view* | *Settings panel* |
-| ![Windows Hello Setup](screenshots/Screenshot4.png) | ![2FA Management](screenshots/Screenshot5.png) | ![CSV Import/Export](screenshots/Screenshot6.png) |
+| ![Windows Hello Setup](screenshots/Desktop-screenshots/Screenshot4.png) | ![2FA Management](screenshots/Desktop-screenshots/Screenshot5.png) | ![CSV Import/Export](screenshots/Desktop-screenshots/Screenshot6.png) |
 | *Windows Hello biometric setup* | *2FA/TOTP management* | *CSV import/export* |
-| ![Extension Pairing](screenshots/Screenshot7.png) | | |
+| ![Extension Pairing](screenshots/Desktop-screenshots/Screenshot7.png) | | |
 | *Extension pairing flow* | | |
 
 ---
