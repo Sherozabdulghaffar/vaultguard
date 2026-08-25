@@ -66,7 +66,9 @@ export const VALID_ALGORITHMS: OtpAlgorithm[] = ['SHA1', 'SHA256', 'SHA512'];
  * entry both produce grouped/lower-cased variants of the same secret.
  */
 export function normalizeSecret(secret: string): string {
-  return String(secret || '')
+  const s = String(secret || '');
+  if (s.length > 256) throw new Error('Secret too long');
+  return s
     .replace(/[\s\-_]/g, '')
     .replace(/=+$/, '')
     .toUpperCase();
