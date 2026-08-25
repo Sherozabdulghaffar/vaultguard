@@ -6,6 +6,8 @@ release/
 *.log
 .env
 .vscode/
+.claude/
+.freebuff/
 .DS_Store
 Thumbs.db
 "@ | Set-Content .gitignore
