@@ -300,7 +300,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 ## Support
 
 - **Issues:** [GitHub Issues](https://github.com/Sherozabdulghaffar/vaultguard/issues)
-- **Security:** Report vulnerabilities privately via [security@vaultguard.example](mailto:security@vaultguard.example) (or GitHub Security Advisories)
+- **Security:** Report vulnerabilities privately via [shahrozgaffar50@gmail.com](mailto:shahrozgaffar50@gmail.com) (or GitHub Security Advisories)
 
 ---
 
