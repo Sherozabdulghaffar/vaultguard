@@ -56,6 +56,28 @@ vaultguard/
 
 ---
 
+## Desktop App Screenshots
+
+| | | |
+|:---:|:---:|:---:|
+| ![VaultGuard Login](screenshots/Screenshot1.png) | ![VaultGuard Vault](screenshots/Screenshot2.png) | ![VaultGuard Settings](screenshots/Screenshot3.png) |
+| *Login / Unlock screen* | *Main vault view* | *Settings panel* |
+| ![Windows Hello Setup](screenshots/Screenshot4.png) | ![2FA Management](screenshots/Screenshot5.png) | ![CSV Import/Export](screenshots/Screenshot6.png) |
+| *Windows Hello biometric setup* | *2FA/TOTP management* | *CSV import/export* |
+| ![Extension Pairing](screenshots/Screenshot7.png) | | |
+| *Extension pairing flow* | | |
+
+---
+
+## Extension Screenshots
+
+| | |
+|:---:|:---:|
+| ![Extension Popup](screenshots/Screenshot8.png) | ![Extension Auto-fill](screenshots/Screenshot9.png) |
+| *Extension popup with credentials & 2FA codes* | *Auto-fill in action on a login page* |
+
+---
+
 ## Quick Start — Pre-built Release
 
 ### 1. Download
