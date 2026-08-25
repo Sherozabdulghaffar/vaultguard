@@ -143,6 +143,22 @@ Go to the **[Releases](https://github.com/Sherozabdulghaffar/vaultguard/releases
 
 ---
 
+## Live Demo (Browser Preview)
+
+Try the UI instantly at **[https://sherozabdulghaffar.github.io/vaultguard/index.preview.html](https://sherozabdulghaffar.github.io/vaultguard/index.preview.html)** — no install needed.
+
+> **⚠️ Preview limitations** — The demo runs entirely in your browser, so these features are **disabled or simulated**:
+> - **Native messaging / desktop connection** — No desktop app to talk to
+> - **Windows Hello / FIDO2 unlock** — Requires the Electron app's secure context
+> - **Vault persistence** — Data is stored in `localStorage` (cleared on demo reset)
+> - **CSV import/export** — File system access not available
+> - **Auto-fill on real sites** — Content scripts need the extension installed
+> - **Native messaging host registration** — Requires Windows Registry access
+>
+> **For the real experience**, install the desktop app + extension (see *Quick Start* above). The preview is a UI walkthrough only.
+
+---
+
 ## Development Setup
 
 ### Prerequisites
