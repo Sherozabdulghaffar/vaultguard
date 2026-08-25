@@ -58,23 +58,50 @@ vaultguard/
 
 ## Desktop App Screenshots
 
-| | | |
-|:---:|:---:|:---:|
-| ![VaultGuard Login](screenshots/Screenshot1.png) | ![VaultGuard Vault](screenshots/Screenshot2.png) | ![VaultGuard Settings](screenshots/Screenshot3.png) |
-| *Login / Unlock screen* | *Main vault view* | *Settings panel* |
-| ![Windows Hello Setup](screenshots/Screenshot4.png) | ![2FA Management](screenshots/Screenshot5.png) | ![CSV Import/Export](screenshots/Screenshot6.png) |
-| *Windows Hello biometric setup* | *2FA/TOTP management* | *CSV import/export* |
-| ![Extension Pairing](screenshots/Screenshot7.png) | | |
-| *Extension pairing flow* | | |
+<table>
+<tr>
+<td align="center" width="33%">
+<img src="screenshots/Screenshot1.png" width="500"/><br/><em>Login / Unlock screen</em>
+</td>
+<td align="center" width="33%">
+<img src="screenshots/Screenshot2.png" width="500"/><br/><em>Main vault view</em>
+</td>
+<td align="center" width="33%">
+<img src="screenshots/Screenshot3.png" width="500"/><br/><em>Settings panel</em>
+</td>
+</tr>
+<tr>
+<td align="center" width="33%">
+<img src="screenshots/Screenshot4.png" width="500"/><br/><em>Windows Hello biometric setup</em>
+</td>
+<td align="center" width="33%">
+<img src="screenshots/Screenshot5.png" width="500"/><br/><em>2FA/TOTP management</em>
+</td>
+<td align="center" width="33%">
+<img src="screenshots/Screenshot6.png" width="500"/><br/><em>CSV import/export</em>
+</td>
+</tr>
+<tr>
+<td align="center" width="33%" colspan="3">
+<img src="screenshots/Screenshot7.png" width="500"/><br/><em>Extension pairing flow</em>
+</td>
+</tr>
+</table>
 
 ---
 
 ## Extension Screenshots
 
-| | |
-|:---:|:---:|
-| ![Extension Popup](screenshots/Screenshot8.png) | ![Extension Auto-fill](screenshots/Screenshot9.png) |
-| *Extension popup with credentials & 2FA codes* | *Auto-fill in action on a login page* |
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="screenshots/Screenshot8.png" width="500"/><br/><em>Extension popup with credentials & 2FA codes</em>
+</td>
+<td align="center" width="50%">
+<img src="screenshots/Screenshot9.png" width="500"/><br/><em>Auto-fill in action on a login page</em>
+</td>
+</tr>
+</table>
 
 ---
 
