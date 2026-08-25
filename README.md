@@ -61,29 +61,29 @@ vaultguard/
 <table>
 <tr>
 <td align="center" width="33%">
-<img src="screenshots/Screenshot1.png" width="500"/><br/><em>Login / Unlock screen</em>
+<img src="screenshots/Desktop-screenshots/Screenshot1.png" width="500"/><br/><em>Login / Unlock screen</em>
 </td>
 <td align="center" width="33%">
-<img src="screenshots/Screenshot2.png" width="500"/><br/><em>Main vault view</em>
+<img src="screenshots/Desktop-screenshots/Screenshot2.png" width="500"/><br/><em>Main vault view</em>
 </td>
 <td align="center" width="33%">
-<img src="screenshots/Screenshot3.png" width="500"/><br/><em>Settings panel</em>
+<img src="screenshots/Desktop-screenshots/Screenshot3.png" width="500"/><br/><em>2FA Management</em>
 </td>
 </tr>
 <tr>
 <td align="center" width="33%">
-<img src="screenshots/Screenshot4.png" width="500"/><br/><em>Windows Hello biometric setup</em>
+<img src="screenshots/Desktop-screenshots/Screenshot4.png" width="500"/><br/><em>Password Generator</em>
 </td>
 <td align="center" width="33%">
-<img src="screenshots/Screenshot5.png" width="500"/><br/><em>2FA/TOTP management</em>
+<img src="screenshots/Desktop-screenshots/Screenshot5.png" width="500"/><br/><em>Backup Management</em>
 </td>
 <td align="center" width="33%">
-<img src="screenshots/Screenshot6.png" width="500"/><br/><em>CSV import/export</em>
+<img src="screenshots/Desktop-screenshots/Screenshot6.png" width="500"/><br/><em>Settings & Extension pairing</em>
 </td>
 </tr>
 <tr>
 <td align="center" width="33%" colspan="3">
-<img src="screenshots/Screenshot7.png" width="500"/><br/><em>Extension pairing flow</em>
+<img src="screenshots/Desktop-screenshots/Screenshot7.png" width="500"/><br/><em>CSV Import/Export</em>
 </td>
 </tr>
 </table>
@@ -95,10 +95,10 @@ vaultguard/
 <table>
 <tr>
 <td align="center" width="50%">
-<img src="screenshots/Screenshot8.png" width="500"/><br/><em>Extension popup with credentials & 2FA codes</em>
+<img src="screenshots/Extension-Screenshots/Screenshot8.png" width="500"/><br/><em>Extension popup with credentials & 2FA codes</em>
 </td>
 <td align="center" width="50%">
-<img src="screenshots/Screenshot9.png" width="500"/><br/><em>Auto-fill in action on a login page</em>
+<img src="screenshots/Extension-Screenshots/Screenshot9.png" width="500"/><br/><em>Auto-fill in action and add 2FA</em>
 </td>
 </tr>
 </table>
@@ -315,6 +315,22 @@ Run `extension/native-host/uninstall-host.bat` to remove Registry entries and fi
 - **Session tokens** → 24-hour random tokens, invalidated on lock/quit
 - **Transport** → Native Messaging (stdin/stdout) or loopback HTTP (`127.0.0.1:19800-19809`) with per-pair tokens
 - **No telemetry, no analytics, no external requests** (except favicon fetching for UI, which can be disabled)
+
+---
+## Security & Trust
+
+**Transparency is our audit.** Unlike closed-source managers that rely on paid third-party audits (which are point-in-time snapshots), VaultGuard is **100% open source** — every line of crypto, storage, and communication code is visible for anyone to review, fork, or verify.
+
+| Aspect | How we build trust |
+|--------|-------------------|
+| **Open source** | MIT licensed — full source on GitHub, no hidden binaries |
+| **Reproducible builds** | Build locally from source; compare hashes |
+| **Standard crypto** | PBKDF2 (600k) + AES-256-GCM — no custom algorithms |
+| **No supply-chain risk** | Minimal dependencies (no `node_modules` in the extension; desktop uses pinned, audited packages) |
+| **Local-only** | Zero network calls — your vault never leaves your machine |
+| **Community review** | Issues, PRs, and security advisories are public |
+
+> **Note on third-party audits:** While paid audits provide a snapshot, they don't guarantee ongoing security. Continuous open review, reproducible builds, and using battle-tested primitives (PBKDF2, AES-GCM, WebAuthn) provide stronger long-term assurance. We welcome independent security researchers — see our [Security Policy](SECURITY.md) for responsible disclosure.
 
 ---
 
