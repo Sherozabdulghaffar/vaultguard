@@ -147,15 +147,20 @@ Go to the **[Releases](https://github.com/Sherozabdulghaffar/vaultguard/releases
 
 Try the UI instantly at **[https://sherozabdulghaffar.github.io/vaultguard/index.preview.html](https://sherozabdulghaffar.github.io/vaultguard/index.preview.html)** — no install needed.
 
-> **⚠️ Preview limitations** — The demo runs entirely in your browser, so these features are **disabled or simulated**:
-> - **Native messaging / desktop connection** — No desktop app to talk to
-> - **Windows Hello / FIDO2 unlock** — Requires the Electron app's secure context
-> - **Vault persistence** — Data is stored in `localStorage` (cleared on demo reset)
-> - **CSV import/export** — File system access not available
-> - **Auto-fill on real sites** — Content scripts need the extension installed
-> - **Native messaging host registration** — Requires Windows Registry access
+> **⚠️ Preview limitations** — The demo runs entirely in your browser as a **static UI mockup**. The full JavaScript logic for crypto, vault management, native messaging, and biometric unlock lives in the **desktop Electron app** and **extension background scripts** — not in this browser preview.
 >
-> **For the real experience**, install the desktop app + extension (see *Quick Start* above). The preview is a UI walkthrough only.
+> **Disabled / simulated in preview:**
+> - **Native messaging / desktop connection** — No desktop app to communicate with
+> - **Windows Hello / FIDO2 unlock** — Requires Electron's `safeStorage` (DPAPI) and WebAuthn in a secure context
+> - **Vault encryption/decryption** — PBKDF2 + AES-256-GCM runs in the desktop main process, not the browser
+> - **Vault persistence** — Preview uses `localStorage` (cleared on reset); real vault is encrypted SQLite
+> - **CSV import/export** — Requires Node.js `fs` and desktop file dialogs
+> - **Auto-fill on real sites** — Content scripts + desktop bridge only work with installed extension
+> - **Native messaging host registration** — Requires Windows Registry access
+> - **Passkey/WebAuthn management** — Extension background service worker handles credential creation
+> - **2FA code generation** — TOTP engine runs in desktop/shared library, not preview
+>
+> **For the real experience** — install the desktop app + extension (see *Quick Start* above). The preview is a UI walkthrough only.
 
 ---
 
