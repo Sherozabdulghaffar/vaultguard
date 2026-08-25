@@ -340,7 +340,7 @@ Run `extension/native-host/uninstall-host.bat` to remove Registry entries and fi
 ---
 ## Security & Trust
 
-**Transparency is our audit.** Unlike closed-source managers that rely on paid third-party audits (which are point-in-time snapshots), VaultGuard is **100% open source** — every line of crypto, storage, and communication code is visible for anyone to review, fork, or verify.
+**This project has not undergone an independent security audit. Open source allows public review, but source availability is not a substitute for an independent audit.** Unlike closed-source managers that rely on paid third-party audits (which are point-in-time snapshots), VaultGuard is **100% open source** — every line of crypto, storage, and communication code is visible for anyone to review, fork, or verify.
 
 | Aspect | How we build trust |
 |--------|-------------------|
