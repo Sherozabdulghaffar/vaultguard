@@ -73,8 +73,8 @@ vaultguard/
 
 | | |
 |:---:|:---:|
-| ![Extension Popup](screenshots/Screenshot8.png) | ![Extension Auto-fill](screenshots/Screenshot9.png) |
-| *Extension popup with credentials & 2FA codes* | *Auto-fill in action on a login page* |
+| ![Extension Popup](screenshots/Extension-Screenshots/Screenshot8.png) | ![Extension Auto-fill](screenshots/Extension-Screenshots/Screenshot9.png) |
+| *Extension popup with credentials & 2FA codes* | *Auto-fill in action and add 2fa* |
 
 ---
 
