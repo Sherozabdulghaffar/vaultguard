@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "Node16",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": false,
+    "moduleResolution": "Node16",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["./src/renderer/*"],
+      "@shared/*": ["../shared/src/*"]
+    },
+    "baseUrl": "."
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "release"]
+}

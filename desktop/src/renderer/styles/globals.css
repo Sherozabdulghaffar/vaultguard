@@ -1,0 +1,290 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --vault-gradient: linear-gradient(135deg, #7c5cff 0%, #5f28e3 100%);
+  --card-gradient: linear-gradient(180deg, rgba(26, 27, 46, 0.8) 0%, rgba(15, 15, 35, 0.95) 100%);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #0f0f23;
+  color: #e5e7eb;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Drag region for Electron title bar */
+.titlebar-drag {
+  -webkit-app-region: drag;
+}
+
+.titlebar-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4a4b5c;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5a5b6c;
+}
+
+/* Custom focus styles */
+*:focus-visible {
+  outline: 2px solid #7c5cff;
+  outline-offset: 2px;
+}
+
+/* Glass morphism card */
+.glass-card {
+  background: rgba(26, 27, 46, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(124, 92, 255, 0.1);
+  border-radius: 16px;
+}
+
+.glass-card-hover:hover {
+  border-color: rgba(124, 92, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(124, 92, 255, 0.1);
+}
+
+/* TOTP Code animation */
+@keyframes codePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.totp-code {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+}
+
+.totp-progress {
+  transition: width 1s linear;
+}
+
+/*
+ * Countdown ring. The drain is a pure CSS animation so the grid does not have
+ * to re-render every frame to look smooth: each card sets its own period and a
+ * negative delay equal to the elapsed time, which puts the animation at the
+ * right phase immediately. `--ring-circumference` must match the SVG's
+ * stroke-dasharray.
+ */
+@keyframes totpRingDrain {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: var(--ring-circumference); }
+}
+
+.totp-ring-fill {
+  animation-name: totpRingDrain;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: var(--totp-period, 30s);
+  animation-delay: var(--totp-delay, 0s);
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .totp-ring-fill { animation: none; }
+}
+
+/* Replayed whenever the code rolls over, via a changing React key. */
+@keyframes codeSwap {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.code-swap {
+  animation: codeSwap 0.25s ease-out;
+}
+
+/* The card being dragged during a manual reorder. */
+.totp-dragging {
+  opacity: 0.4;
+}
+
+.totp-drop-target {
+  box-shadow: inset 0 0 0 2px rgba(124, 92, 255, 0.6);
+}
+
+/* Button styles */
+.btn-primary {
+  background: var(--vault-gradient);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(124, 92, 255, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: rgba(124, 92, 255, 0.1);
+  color: #b2abff;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(124, 92, 255, 0.2);
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: rgba(124, 92, 255, 0.2);
+  border-color: rgba(124, 92, 255, 0.4);
+}
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Input styles */
+.input-field {
+  background: rgba(15, 15, 35, 0.8);
+  border: 1px solid rgba(124, 92, 255, 0.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #e5e7eb;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.input-field:focus {
+  border-color: #7c5cff;
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.1);
+  outline: none;
+}
+
+.input-field::placeholder {
+  color: #6b7280;
+}
+
+/* Toast notifications */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Password strength indicator */
+.strength-bar {
+  height: 4px;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Sidebar navigation */
+.nav-item {
+  transition: all 0.2s ease;
+  border-radius: 10px;
+}
+
+.nav-item:hover {
+  background: rgba(124, 92, 255, 0.1);
+}
+
+.nav-item.active {
+  background: rgba(124, 92, 255, 0.15);
+  color: #b2abff;
+  border-left: 3px solid #7c5cff;
+}
+
+/* Loading spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(124, 92, 255, 0.2);
+  border-top-color: #7c5cff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+/* Copy notification */
+@keyframes copyFlash {
+  0% { background: rgba(124, 92, 255, 0.3); }
+  100% { background: transparent; }
+}
+
+.copy-flash {
+  animation: copyFlash 0.5s ease-out;
+}
+
+/* Vault unlock animation */
+@keyframes vaultUnlock {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.vault-unlock {
+  animation: vaultUnlock 0.5s ease-out;
+}

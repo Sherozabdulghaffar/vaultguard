@@ -1,0 +1,271 @@
+/* VaultGuard Autofill Overlay Styles */
+
+.vg-overlay {
+  position: fixed;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  pointer-events: auto;
+}
+
+.vg-autofill-dropdown {
+  position: absolute;
+  background: #1a1b2e;
+  border: 1px solid rgba(124, 92, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(124, 92, 255, 0.1);
+  min-width: 280px;
+  max-width: 360px;
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+  animation: vg-slide-in 0.2s ease-out;
+  font-size: 14px;
+  color: #e5e7eb;
+}
+
+@keyframes vg-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vg-autofill-header {
+  padding: 12px 16px;
+  background: rgba(124, 92, 255, 0.1);
+  border-bottom: 1px solid rgba(124, 92, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vg-autofill-header-icon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #7c5cff, #5f28e3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.vg-autofill-header-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: white;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.vg-autofill-header-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #b2abff;
+}
+
+.vg-autofill-item {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid rgba(42, 43, 64, 0.5);
+}
+
+.vg-autofill-item:last-child {
+  border-bottom: none;
+}
+
+.vg-autofill-item:hover {
+  background: rgba(124, 92, 255, 0.08);
+}
+
+.vg-autofill-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(107, 114, 128, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.vg-autofill-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.vg-autofill-item-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e5e7eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vg-autofill-item-username {
+  font-size: 11px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vg-autofill-item-arrow {
+  color: #4b5563;
+  flex-shrink: 0;
+}
+
+.vg-autofill-item-arrow svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.vg-autofill-footer {
+  padding: 8px 16px;
+  background: rgba(15, 15, 35, 0.5);
+  border-top: 1px solid rgba(42, 43, 64, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vg-autofill-footer-text {
+  font-size: 11px;
+  color: #4b5563;
+}
+
+.vg-autofill-footer-link {
+  font-size: 11px;
+  color: #7c5cff;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.vg-autofill-footer-link:hover {
+  color: #b2abff;
+}
+
+/* 2FA Detection Banner */
+.vg-2fa-banner {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2147483647;
+  background: #1a1b2e;
+  border: 1px solid rgba(124, 92, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 360px;
+  backdrop-filter: blur(20px);
+  animation: vg-slide-up 0.3s ease-out;
+}
+
+@keyframes vg-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vg-2fa-banner-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(34, 197, 94, 0.15);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.vg-2fa-banner-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: #22c55e;
+  fill: none;
+  stroke-width: 2;
+}
+
+.vg-2fa-banner-content {
+  flex: 1;
+}
+
+.vg-2fa-banner-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.vg-2fa-banner-desc {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+.vg-2fa-banner-btn {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #7c5cff, #5f28e3);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.vg-2fa-banner-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124, 92, 255, 0.4);
+}
+
+.vg-2fa-banner-close {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+
+.vg-2fa-banner-close:hover {
+  color: #e5e7eb;
+}
+
+.vg-2fa-banner-close svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}

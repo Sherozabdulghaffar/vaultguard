@@ -1,0 +1,23 @@
+{
+  "name": "vaultguard-2fa",
+  "version": "1.0.0",
+  "description": "A secure, fully local 2FA & Password Manager with browser extension support — built for the post-password era. Passkey-native, hardware-key unlock, zero vendor lock-in.",
+  "private": true,
+  "workspaces": [
+    "desktop",
+    "extension",
+    "shared"
+  ],
+  "scripts": {
+    "build:shared": "cd shared && npm run build",
+    "build:desktop": "cd desktop && npm run build",
+    "build:extension": "cd extension && npm run build",
+    "build:all": "npm run build:shared && npm run build:desktop && npm run build:extension",
+    "dev:desktop": "cd desktop && npm run dev",
+    "dev:extension": "cd extension && npm run dev"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "7zip-bin": "^5.2.0"
+  }
+}

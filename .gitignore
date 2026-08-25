@@ -1,0 +1,11 @@
+@"
+node_modules/
+dist/
+release/
+*.asar
+*.log
+.env
+.vscode/
+.DS_Store
+Thumbs.db
+"@ | Set-Content .gitignore

@@ -1,0 +1,9 @@
+{
+  "name": "com.vaultguard.native",
+  "description": "VaultGuard Native Messaging Host",
+  "path": "vaultguard-native-host.bat",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://hmimnjdmnncjnaeegfjeobjnnaoemcpp/"
+  ]
+}

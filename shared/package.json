@@ -1,0 +1,38 @@
+{
+  "name": "@vaultguard/shared",
+  "version": "1.0.0",
+  "description": "Shared types, crypto utilities, and constants for VaultGuard",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./crypto": {
+      "types": "./dist/crypto.d.ts",
+      "default": "./dist/crypto.js"
+    },
+    "./otp": {
+      "types": "./dist/otp.d.ts",
+      "default": "./dist/otp.js"
+    },
+    "./csv-utils": {
+      "types": "./dist/csv-utils.d.ts",
+      "default": "./dist/csv-utils.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "otplib": "^12.0.1",
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.0",
+    "@types/qrcode": "^1.5.5"
+  }
+}

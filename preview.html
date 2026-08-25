@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VaultGuard - 2FA & Password Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --vault-500: #7c5cff;
+      --vault-600: #6e39f7;
+      --vault-700: #5f28e3;
+      --dark-bg: #0f0f23;
+      --dark-card: #1a1b2e;
+      --dark-border: #2a2b40;
+      --dark-hover: #252638;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--dark-bg);
+      color: #e5e7eb;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 256px;
+      background: var(--dark-card);
+      border-right: 1px solid var(--dark-border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--dark-border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--vault-500), var(--vault-700));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+
+    .nav-items { flex: 1; padding: 12px; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: #9ca3af;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item:hover { background: var(--dark-hover); color: #e5e7eb; }
+    .nav-item.active { background: rgba(124, 92, 255, 0.1); color: #b2abff; }
+    .nav-item svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    .sidebar-footer {
+      padding: 12px;
+      border-top: 1px solid var(--dark-border);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      overflow: auto;
+      padding: 24px;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .page-header p {
+      color: #9ca3af;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: rgba(26, 27, 46, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(124, 92, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .stat-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .stat-icon.vault { background: rgba(124, 92, 255, 0.15); color: var(--vault-500); }
+    .stat-icon.green { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+    .stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .stat-icon.yellow { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+
+    .stat-value { font-size: 28px; font-weight: 700; }
+    .stat-label { font-size: 13px; color: #9ca3af; margin-top: 4px; }
+
+    /* Content Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: rgba(26, 27, 46, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(124, 92, 255, 0.1);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .card-header h2 { font-size: 16px; font-weight: 600; }
+    .card-header span { font-size: 12px; color: #9ca3af; }
+
+    /* TOTP Card */
+    .totp-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: rgba(15, 15, 35, 0.5);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .totp-info { display: flex; align-items: center; gap: 12px; }
+
+    .totp-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(124, 92, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--vault-500);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .totp-name { font-size: 13px; font-weight: 500; }
+    .totp-issuer { font-size: 11px; color: #6b7280; }
+
+    .totp-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--vault-500);
+      letter-spacing: 0.1em;
+    }
+
+    .totp-timer {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(34, 197, 94, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #22c55e;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 12px;
+    }
+
+    /* Password Card */
+    .password-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: rgba(15, 15, 35, 0.5);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .password-info { display: flex; align-items: center; gap: 12px; }
+
+    .password-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(107, 114, 128, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      font-size: 14px;
+    }
+
+    .password-name { font-size: 13px; font-weight: 500; }
+    .password-username { font-size: 11px; color: #6b7280; }
+
+    .password-actions { display: flex; gap: 4px; opacity: 0.6; }
+
+    .action-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: none;
+      color: #9ca3af;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .action-btn:hover { background: rgba(124, 92, 255, 0.15); color: var(--vault-500); }
+    .action-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    /* Password Generator Section */
+    .generator-section {
+      margin-top: 24px;
+    }
+
+    .generator-card {
+      background: rgba(26, 27, 46, 0.7);
+      border: 1px solid rgba(124, 92, 255, 0.1);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .password-display {
+      background: rgba(15, 15, 35, 0.8);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 16px;
+      letter-spacing: 0.05em;
+    }
+
+    .strength-bar {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--dark-border);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .strength-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s, background 0.3s;
+    }
+
+    .strength-fill.strong { width: 100%; background: #22c55e; }
+    .strength-fill.good { width: 75%; background: #3b82f6; }
+
+    .strength-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    .slider-group { margin-bottom: 20px; }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .slider-header label { font-size: 13px; color: #d1d5db; }
+    .slider-header span { font-size: 13px; color: var(--vault-500); font-family: 'JetBrains Mono', monospace; }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: var(--dark-border);
+      border-radius: 3px;
+      -webkit-appearance: none;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--vault-500);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(124, 92, 255, 0.4);
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+    }
+
+    .toggle-row span { font-size: 13px; color: #d1d5db; }
+
+    .toggle {
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      background: var(--vault-500);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 22px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      transition: left 0.2s;
+    }
+
+    .toggle.off { background: var(--dark-border); }
+    .toggle.off::after { left: 2px; }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, var(--vault-500), var(--vault-700));
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124, 92, 255, 0.4); }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 12px;
+      background: rgba(124, 92, 255, 0.1);
+      color: #b2abff;
+      border: 1px solid rgba(124, 92, 255, 0.2);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover { background: rgba(124, 92, 255, 0.2); }
+
+    /* Extension Status */
+    .extension-card {
+      background: rgba(26, 27, 46, 0.7);
+      border: 1px solid rgba(124, 92, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .extension-info { display: flex; align-items: center; gap: 16px; }
+
+    .extension-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .extension-icon svg { width: 24px; height: 24px; stroke: #3b82f6; fill: none; stroke-width: 2; }
+
+    .extension-status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #22c55e; }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Backup Section */
+    .backup-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      background: rgba(15, 15, 35, 0.5);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .backup-info { display: flex; align-items: center; gap: 12px; }
+
+    .backup-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(34, 197, 94, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .backup-icon svg { width: 20px; height: 20px; stroke: #22c55e; fill: none; stroke-width: 2; }
+
+    .backup-list { margin-top: 16px; }
+
+    .backup-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: rgba(15, 15, 35, 0.3);
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+
+    .backup-item-info { font-size: 13px; }
+    .backup-item-name { font-weight: 500; }
+    .backup-item-meta { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+    .btn-sm {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+
+    .btn-sm.primary { background: var(--vault-500); color: white; }
+    .btn-sm.secondary { background: rgba(124, 92, 255, 0.1); color: #b2abff; }
+    .btn-sm.danger { background: rgba(239, 68, 68, 0.1); color: #fca5a5; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <span style="font-weight: 600;">VaultGuard</span>
+      </div>
+
+      <nav class="nav-items">
+        <button class="nav-item active" onclick="showSection('dashboard')">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          Dashboard
+        </button>
+        <button class="nav-item" onclick="showSection('passwords')">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+          </svg>
+          Passwords
+        </button>
+        <button class="nav-item" onclick="showSection('2fa')">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+          2FA Codes
+        </button>
+        <button class="nav-item" onclick="showSection('generator')">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+          Generator
+        </button>
+        <button class="nav-item" onclick="showSection('backups')">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Backups
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="nav-item" style="color: #9ca3af;">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          Settings
+        </button>
+        <button class="nav-item" style="color: #ef4444;">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+          </svg>
+          Lock Vault
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+      <!-- Dashboard Section (default) -->
+      <div id="section-dashboard" class="section">
+        <div class="page-header">
+          <h1>Dashboard</h1>
+          <p>Your security overview</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon vault">
+              <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+            </div>
+            <div class="stat-value">24</div>
+            <div class="stat-label">Passwords</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">
+              <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="stat-value">8</div>
+            <div class="stat-label">2FA Codes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="stat-value">5</div>
+            <div class="stat-label">Categories</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon yellow">
+              <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <div class="stat-value">87%</div>
+            <div class="stat-label">Security Score</div>
+          </div>
+        </div>
+
+        <div class="content-grid">
+          <!-- Active 2FA Codes -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Active 2FA Codes</h2>
+              <span>Auto-refreshing</span>
+            </div>
+            <div class="totp-item">
+              <div class="totp-info">
+                <div class="totp-icon">G</div>
+                <div>
+                  <div class="totp-name">Google Account</div>
+                  <div class="totp-issuer">Google</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center;">
+                <div class="totp-code" id="totp1">482 916</div>
+                <div class="totp-timer" id="timer1">24</div>
+              </div>
+            </div>
+            <div class="totp-item">
+              <div class="totp-info">
+                <div class="totp-icon">G</div>
+                <div>
+                  <div class="totp-name">GitHub Account</div>
+                  <div class="totp-issuer">GitHub</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center;">
+                <div class="totp-code">731 205</div>
+                <div class="totp-timer">18</div>
+              </div>
+            </div>
+            <div class="totp-item">
+              <div class="totp-info">
+                <div class="totp-icon">D</div>
+                <div>
+                  <div class="totp-name">Discord</div>
+                  <div class="totp-issuer">Discord</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center;">
+                <div class="totp-code">594 328</div>
+                <div class="totp-timer">07</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Passwords -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Recent Passwords</h2>
+              <span>24 total</span>
+            </div>
+            <div class="password-item">
+              <div class="password-info">
+                <div class="password-icon">G</div>
+                <div>
+                  <div class="password-name">Google</div>
+                  <div class="password-username">user@gmail.com</div>
+                </div>
+              </div>
+              <div class="password-actions">
+                <button class="action-btn" title="Copy username">
+                  <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+                <button class="action-btn" title="Copy password">
+                  <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="password-item">
+              <div class="password-info">
+                <div class="password-icon">G</div>
+                <div>
+                  <div class="password-name">GitHub</div>
+                  <div class="password-username">developer@github.com</div>
+                </div>
+              </div>
+              <div class="password-actions">
+                <button class="action-btn" title="Copy username">
+                  <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+                <button class="action-btn" title="Copy password">
+                  <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="password-item">
+              <div class="password-info">
+                <div class="password-icon">D</div>
+                <div>
+                  <div class="password-name">Discord</div>
+                  <div class="password-username">gamer#1234</div>
+                </div>
+              </div>
+              <div class="password-actions">
+                <button class="action-btn" title="Copy username">
+                  <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+                <button class="action-btn" title="Copy password">
+                  <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Extension Status -->
+        <div class="extension-card">
+          <div class="extension-info">
+            <div class="extension-icon">
+              <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/>
+                <line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/>
+                <line x1="10.88" y1="21.94" x2="15.46" y2="14"/>
+              </svg>
+            </div>
+            <div>
+              <h3 style="font-weight: 600;">Browser Extension</h3>
+              <p style="font-size: 13px; color: #9ca3af;">Auto-fill and 2FA detection on web pages</p>
+            </div>
+          </div>
+          <div class="extension-status">
+            <div class="status-dot"></div>
+            Connected
+          </div>
+        </div>
+      </div>
+
+      <!-- Generator Section (hidden by default) -->
+      <div id="section-generator" class="section" style="display: none;">
+        <div class="page-header">
+          <h1>Password Generator</h1>
+          <p>Generate strong, secure passwords</p>
+        </div>
+
+        <div class="generator-card">
+          <div class="password-display" id="generated-password">Kx9#mP2$vL8nQ4wR</div>
+
+          <div class="strength-label">
+            <span>Strength</span>
+            <span style="color: #22c55e;">Strong</span>
+          </div>
+          <div class="strength-bar">
+            <div class="strength-fill strong"></div>
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <label>Length</label>
+              <span id="length-value">16</span>
+            </div>
+            <input type="range" min="8" max="64" value="16" id="length-slider" oninput="updateLength(this.value)">
+          </div>
+
+          <div class="toggle-row">
+            <span>Uppercase (A-Z)</span>
+            <div class="toggle" onclick="this.classList.toggle('off')"></div>
+          </div>
+          <div class="toggle-row">
+            <span>Lowercase (a-z)</span>
+            <div class="toggle" onclick="this.classList.toggle('off')"></div>
+          </div>
+          <div class="toggle-row">
+            <span>Numbers (0-9)</span>
+            <div class="toggle" onclick="this.classList.toggle('off')"></div>
+          </div>
+          <div class="toggle-row">
+            <span>Symbols (!@#$%)</span>
+            <div class="toggle" onclick="this.classList.toggle('off')"></div>
+          </div>
+          <div class="toggle-row">
+            <span>Exclude ambiguous (I, l, 1, O, 0)</span>
+            <div class="toggle off" onclick="this.classList.toggle('off')"></div>
+          </div>
+
+          <button class="btn-primary" style="margin-top: 16px;" onclick="regeneratePassword()">Generate New Password</button>
+        </div>
+      </div>
+
+      <!-- Backups Section (hidden by default) -->
+      <div id="section-backups" class="section" style="display: none;">
+        <div class="page-header">
+          <h1>Backup Manager</h1>
+          <p>Automatic encrypted backups of your vault</p>
+        </div>
+
+        <div class="card">
+          <div class="backup-status">
+            <div class="backup-info">
+              <div class="backup-icon">
+                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                  <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+                </svg>
+              </div>
+              <div>
+                <h3 style="font-weight: 600;">Last Backup</h3>
+                <p style="font-size: 13px; color: #9ca3af;">2 hours ago</p>
+              </div>
+            </div>
+            <button class="btn-primary" style="width: auto; padding: 10px 20px;">Create Backup Now</button>
+          </div>
+
+          <div class="card-header">
+            <h2>Backup History</h2>
+          </div>
+
+          <div class="backup-list">
+            <div class="backup-item">
+              <div class="backup-item-info">
+                <div class="backup-item-name">vaultguard-backup-1787376000000.json</div>
+                <div class="backup-item-meta">Aug 22, 2026 2:00 PM • 24 KB</div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-sm secondary">Restore</button>
+                <button class="btn-sm danger">Delete</button>
+              </div>
+            </div>
+            <div class="backup-item">
+              <div class="backup-item-info">
+                <div class="backup-item-name">vaultguard-backup-1787372400000.json</div>
+                <div class="backup-item-meta">Aug 22, 2026 1:00 PM • 24 KB</div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-sm secondary">Restore</button>
+                <button class="btn-sm danger">Delete</button>
+              </div>
+            </div>
+            <div class="backup-item">
+              <div class="backup-item-info">
+                <div class="backup-item-name">vaultguard-backup-1787368800000.json</div>
+                <div class="backup-item-meta">Aug 22, 2026 12:00 PM • 23 KB</div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-sm secondary">Restore</button>
+                <button class="btn-sm danger">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function showSection(name) {
+      document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      const section = document.getElementById('section-' + name);
+      if (section) section.style.display = 'block';
+
+      event.target.closest('.nav-item').classList.add('active');
+    }
+
+    function updateLength(val) {
+      document.getElementById('length-value').textContent = val;
+      regeneratePassword();
+    }
+
+    function regeneratePassword() {
+      const length = parseInt(document.getElementById('length-slider').value);
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+      let result = '';
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      document.getElementById('generated-password').textContent = result;
+    }
+
+    // TOTP timer animation
+    let timer = 30;
+    setInterval(() => {
+      timer--;
+      if (timer <= 0) timer = 30;
+      const timerEl = document.getElementById('timer1');
+      if (timerEl) {
+        timerEl.textContent = timer;
+        timerEl.style.color = timer <= 5 ? '#ef4444' : timer <= 10 ? '#eab308' : '#22c55e';
+      }
+    }, 1000);
+  </script>
+</body>
+</html>

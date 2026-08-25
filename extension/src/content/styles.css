@@ -1,0 +1,91 @@
+/* ============================================
+   VaultGuard Content Script Styles
+   ============================================ */
+
+/* Floating Action Button */
+#vaultguard-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#vaultguard-fab-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c5cff 0%, #5f28e3 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(124, 92, 255, 0.4);
+  transition: all 0.2s ease;
+}
+
+#vaultguard-fab-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(124, 92, 255, 0.5);
+}
+
+#vaultguard-fab-menu {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  background: #1a1b2e;
+  border: 1px solid rgba(124, 92, 255, 0.2);
+  border-radius: 12px;
+  padding: 8px;
+  min-width: 180px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+#vaultguard-fab-menu.vaultguard-hidden {
+  display: none;
+}
+
+.vaultguard-menu-item {
+  padding: 10px 14px;
+  color: #e5e7eb;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.vaultguard-menu-item:hover {
+  background: rgba(124, 92, 255, 0.15);
+  color: #b2abff;
+}
+
+.vaultguard-menu-item-secondary {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.vaultguard-menu-separator {
+  height: 1px;
+  background: rgba(124, 92, 255, 0.1);
+  margin: 4px 8px;
+}
+
+/* Auto-fill highlight animation */
+@keyframes vaultguard-highlight {
+  0% {
+    box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.3);
+    border-color: #7c5cff;
+  }
+  100% {
+    box-shadow: none;
+  }
+}
+
+.vaultguard-autofilled {
+  animation: vaultguard-highlight 1.5s ease-out;
+}
+
+/* TOTP field indicator */
+input[data-vaultguard-type="totp"] {
+  background-image: linear-gradient(135deg, rgba(124, 92, 255, 0.05) 0%, rgba(124, 92, 255, 0.02) 100%);
+}

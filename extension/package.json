@@ -1,0 +1,20 @@
+{
+  "name": "@vaultguard/extension",
+  "version": "1.0.0",
+  "description": "VaultGuard Browser Extension - Auto-fill and 2FA detection",
+  "scripts": {
+    "build": "echo 'Extension files are ready to load'",
+    "dev": "echo 'Load extension folder in browser developer mode'"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "commonjs",
+  "dependencies": {
+    "jsqr": "^1.4.0"
+  }
+}

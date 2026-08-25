@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "VaultGuard",
+  "version": "1.0.0",
+  "description": "Secure 2FA & Password Manager - Auto-fill passwords and detect 2FA codes on any webpage",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "scripting",
+    "notifications",
+    "contextMenus",
+    "clipboardRead",
+    "nativeMessaging",
+    "alarms"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/detector.js", "src/content/autofill.js", "src/content/qr-capture.js"],
+      "css": ["src/content/styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*", "src/content/overlay.css", "lib/jsqr.min.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

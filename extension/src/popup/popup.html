@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VaultGuard</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Loading -->
+    <div id="loading" class="screen active">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+      </div>
+      <p class="loading-text">Connecting to VaultGuard…</p>
+    </div>
+
+    <!-- Desktop app unreachable -->
+    <div id="disconnected" class="screen">
+      <div class="logo">
+        <div class="logo-icon error">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"/>
+            <line x1="12" y1="2" x2="12" y2="12"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="title">Desktop app not running</h2>
+      <p class="subtitle" id="disconnected-reason">
+        Start VaultGuard on this computer, then try again.
+      </p>
+      <button id="retry-btn" class="btn btn-primary btn-full">Try again</button>
+
+      <!-- Entries the extension holds itself still work while the app is closed. -->
+      <div id="offline-section" class="section offline-section hidden">
+        <div class="section-header">
+          <h3>Saved in this browser</h3>
+          <span id="offline-count" class="count">0</span>
+        </div>
+        <div id="offline-list" class="credential-list"></div>
+      </div>
+    </div>
+
+    <!-- Pairing -->
+    <div id="pairing" class="screen">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="title">Connect to VaultGuard</h2>
+
+      <div id="pairing-step-start">
+        <p class="subtitle">
+          This extension needs your permission once. VaultGuard will show a
+          6-digit code on your desktop — type it here to finish.
+        </p>
+        <button id="pair-start-btn" class="btn btn-primary btn-full">Show me the code</button>
+      </div>
+
+      <div id="pairing-step-code" class="hidden">
+        <p class="subtitle">
+          Enter the 6-digit code from the VaultGuard window.
+          <span id="pair-countdown" class="pair-countdown"></span>
+        </p>
+        <form id="pair-form" class="form">
+          <input
+            type="text"
+            id="pair-code"
+            class="pair-code-input"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="7"
+            placeholder="000 000"
+            aria-label="Pairing code"
+          >
+          <div id="pair-error" class="error-message hidden"></div>
+          <button type="submit" id="pair-confirm-btn" class="btn btn-primary btn-full">Connect</button>
+          <button type="button" id="pair-cancel-btn" class="btn btn-secondary btn-full">Back</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Locked -->
+    <div id="locked" class="screen">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="title">Unlock vault</h2>
+      <p class="subtitle">Enter your master password to continue</p>
+
+      <form id="unlock-form" class="form">
+        <div class="input-group">
+          <input type="password" id="master-password" placeholder="Master password" autocomplete="current-password" required>
+          <button type="button" id="toggle-password" class="toggle-password" aria-label="Show password">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <div id="error-message" class="error-message hidden"></div>
+        <button type="submit" id="unlock-btn" class="btn btn-primary btn-full">Unlock</button>
+      </form>
+
+      <div id="biometric-section" class="biometric-section hidden">
+        <div class="divider"><span>or</span></div>
+        <button id="biometric-btn" class="btn btn-secondary btn-full">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/>
+          </svg>
+          <span>Unlock with Windows Hello</span>
+        </button>
+        <button id="biometric-setup-btn" class="btn btn-accent btn-full hidden">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/>
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <span>Setup Windows Hello</span>
+        </button>
+        <form id="biometric-finish-form" class="form hidden">
+          <p class="biometric-finish-hint">One last step — enter your master password once so VaultGuard can enable Windows Hello for next time.</p>
+          <div class="input-group">
+            <input type="password" id="biometric-finish-password" placeholder="Master password" autocomplete="current-password">
+          </div>
+          <div id="biometric-finish-error" class="error-message hidden"></div>
+          <button type="submit" id="biometric-finish-btn" class="btn btn-primary btn-full">Finish setup</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Unlocked -->
+    <div id="unlocked" class="screen">
+      <div class="header">
+        <div class="header-left">
+          <div class="logo-small">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <div>
+            <div class="app-name">VaultGuard</div>
+            <div class="transport-line" id="transport-line"></div>
+          </div>
+        </div>
+        <button id="lock-btn" class="lock-btn" title="Lock vault (the desktop app locks too)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="page-info" class="page-info">
+        <div class="page-info-content">
+          <div class="page-icon" id="page-favicon"></div>
+          <div class="page-details">
+            <p class="page-title" id="page-title">Current page</p>
+            <p class="page-url" id="page-url"></p>
+          </div>
+        </div>
+        <div id="page-status" class="page-status">
+          <span class="status-dot scanning"></span>
+          <span class="status-text">Looking for matches…</span>
+        </div>
+      </div>
+
+      <div id="credentials-section" class="section">
+        <div class="section-header">
+          <h3>Passwords</h3>
+          <span id="password-count" class="count">0</span>
+        </div>
+        <div id="password-list" class="credential-list"></div>
+      </div>
+
+      <div id="totp-section" class="section">
+        <div class="section-header">
+          <h3>2FA codes</h3>
+          <span id="totp-count" class="count">0</span>
+        </div>
+        <div id="totp-list" class="credential-list"></div>
+      </div>
+
+      <div class="add-2fa-section">
+        <button id="add-2fa-btn" class="btn btn-accent btn-full">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+          Add a 2FA code
+        </button>
+      </div>
+
+      <div class="footer">
+        <button id="open-vault-btn" class="btn btn-secondary btn-full">Open VaultGuard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add 2FA -->
+  <div id="qr-scanner-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add a 2FA code</h3>
+        <button id="qr-close-btn" class="modal-close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="qr-error-message" class="error-message hidden"></div>
+
+        <button id="scan-page-btn" class="btn btn-secondary btn-full">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+            <rect x="8" y="8" width="8" height="8" rx="1"/>
+          </svg>
+          Scan a QR code on this page
+        </button>
+
+        <div id="qr-scanner-container">
+          <video id="qr-video" autoplay playsinline muted></video>
+          <div id="qr-overlay"><div class="qr-scan-line"></div></div>
+          <div id="qr-no-camera" class="qr-no-camera hidden">
+            <p>No camera available</p>
+            <p class="qr-no-camera-hint">Scan the page instead, or paste the setup key below.</p>
+          </div>
+        </div>
+
+        <div id="qr-manual-input" class="qr-manual-section">
+          <p class="qr-or-text">Or paste a setup key</p>
+          <div class="input-group">
+            <input type="text" id="otpauth-input" placeholder="otpauth://totp/… or a secret key" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="input-row">
+            <input type="text" id="issuer-input" placeholder="Service (e.g. GitHub)" autocomplete="off">
+            <input type="text" id="account-input" placeholder="Account" autocomplete="off">
+          </div>
+          <div id="qr-preview" class="qr-preview hidden"></div>
+          <button id="paste-clipboard-btn" class="btn btn-secondary btn-full">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            </svg>
+            Paste from clipboard
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="qr-cancel-btn" class="btn btn-secondary">Cancel</button>
+        <button id="qr-save-btn" class="btn btn-primary" disabled>Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
