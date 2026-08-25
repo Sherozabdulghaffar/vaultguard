@@ -14,7 +14,7 @@ Only the latest stable release receives security updates. Please upgrade to the 
 
 Instead, report them privately via one of these channels:
 
-- **Email:** security@vaultguard.example (replace with your actual security email)
+- **Email:** shahrozgaffar50@gmail.com (replace with your actual security email)
 - **GitHub Security Advisories:** Use the "Report a vulnerability" tab in this repository's Security section
 
 ### What to Include
@@ -70,8 +70,8 @@ The following are **not** considered vulnerabilities:
 
 ## Contact
 
-For any security concerns, contact us at **security@vaultguard.example** (replace with your actual email).
+For any security concerns, contact us at **shahrozgaffar50@gmail.com** (replace with your actual email).
 
 ---
 
-*This policy is adapted from industry best practices. Last updated: 2025*
+*This policy is adapted from industry best practices. Last updated: 2026*
