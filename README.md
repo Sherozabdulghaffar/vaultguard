@@ -63,9 +63,9 @@ vaultguard/
 | ![VaultGuard Login](screenshots/Desktop-screenshots/Screenshot1.png) | ![VaultGuard Vault](screenshots/Desktop-screenshots/Screenshot2.png) | ![2FA Management](screenshots/Desktop-screenshots/Screenshot3.png) |
 | *Login / Unlock screen* | *Main vault view* | *2FA Management* |
 | ![Vaultguard Password generator](screenshots/Desktop-screenshots/Screenshot4.png) | ![Backup Management](screenshots/Desktop-screenshots/Screenshot5.png) | ![Settings and extension pairing flow](screenshots/Desktop-screenshots/Screenshot6.png) |
-| *Windows Hello biometric setup* | *2FA/TOTP management* | *CSV import/export* |
+| *Password Generator custom* | *Backup management* | *Settings and Extension pairing flow* |
 | ![CSV Import/Export](screenshots/Desktop-screenshots/Screenshot7.png) | | |
-| *Extension pairing flow* | | |
+| *CSV import/export* | | |
 
 ---
 
