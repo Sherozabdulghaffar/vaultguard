@@ -64,11 +64,11 @@ Go to the **[Releases](https://github.com/Sherozabdulghaffar/vaultguard/releases
 
 > **Verify** the SHA-256 checksum shown on the release page matches your download.
 
-### 2. Install
+### 2. Install & First Run
 
 1. Run the installer.
-2. Allow the native messaging host registration when prompted (required for the extension).
-3. Launch VaultGuard and create a **master password** (minimum 8 characters).
+2. **Launch VaultGuard** — on first launch it automatically installs the native messaging host files and registers them with Chrome/Edge/Brave.
+3. Create a **master password** (minimum 8 characters).
 
 ### 3. Install the Browser Extension
 
@@ -79,7 +79,7 @@ Go to the **[Releases](https://github.com/Sherozabdulghaffar/vaultguard/releases
 3. Click **Load unpacked** → select the `extension/` folder from this repo (or the `extension` folder inside the installed app's resources if packaged).
 4. Copy the **Extension ID** shown under "VaultGuard".
 5. In the installed app, open **Settings → Extension** → paste the Extension ID → **Save**.
-6. Restart the browser.
+6. **Restart the browser** — the extension will now connect to the desktop app.
 
 **Firefox:**
 
@@ -156,28 +156,28 @@ No build needed — the extension runs from source. For production distribution,
 
 ---
 
-## Extension Native Messaging Host (Required)
+## Extension Native Messaging Host (Automated)
 
-The extension communicates with the desktop app via a **Native Messaging Host**. This is a small helper that Chrome launches to proxy messages over stdin/stdout.
+The extension communicates with the desktop app via a **Native Messaging Host**. The desktop app **automatically handles this on first run** — no manual steps required.
 
-### Automated (Recommended)
+### How it works
+
+1. **First launch** of the desktop app copies the native host files (`vaultguard-native-host.bat`, `vaultguard-native-host.js`, manifest template) to `%APPDATA%\VaultGuard\native-host\`.
+2. The app registers a native messaging host manifest in the Windows Registry for Chrome, Edge, Brave, Vivaldi, and Opera — pointing to the bat file.
+3. The manifest initially has an empty `allowed_origins` list (no extension installed yet).
+4. **After installing the extension**, open **Settings → Extension** in the desktop app, paste the Extension ID, and click **Set Extension ID**.
+5. The app updates the manifest with the correct `allowed_origins` and re-registers it.
+6. **Restart your browser** — the extension now connects securely.
+
+### Manual fallback (if auto-registration fails)
+
+If the automated registration doesn't work (e.g., permission issues), you can run the included installer:
 
 1. Open `extension/native-host/`
 2. Double-click **`install-host.bat`**
 3. Paste your Extension ID when prompted
-4. The script copies files to `%APPDATA%\VaultGuard\native-host\` and writes Registry keys for Chrome/Edge/Brave
-5. **Restart your browser**
-
-### Manual (if the batch file fails)
-
-```bat
-# 1. Copy native-host/ to %APPDATA%\VaultGuard\native-host\
-xcopy /E /I extension\native-host %APPDATA%\VaultGuard\native-host\
-
-# 2. Edit com.vaultguard.native.json — replace EXTENSION_ID with your actual ID
-# 3. Register for each browser (run as Administrator):
-reg import com.vaultguard.native.json   # Chrome/Edge/Brave use the same key path
-```
+3. The script copies files to `%APPDATA%\VaultGuard\native-host\` and writes Registry keys for Chrome/Edge/Brave
+4. **Restart your browser**
 
 ### Uninstall
 
@@ -239,7 +239,7 @@ Run `extension/native-host/uninstall-host.bat` to remove Registry entries and fi
 | File | Purpose |
 |------|---------|
 | `desktop/vite.config.ts` | Vite + React + Tailwind config |
-| `desktop/electron-builder.json5` | NSIS installer options (in `package.json` under `build`) |
+| `desktop/package.json` → `build` | NSIS installer options (electron-builder config) |
 | `extension/manifest.json` | Chrome MV3 manifest (permissions, content scripts, native host) |
 | `shared/tsconfig.json` | Shared library TS config |
 
@@ -250,7 +250,7 @@ Run `extension/native-host/uninstall-host.bat` to remove Registry entries and fi
 | Symptom | Likely Cause | Fix |
 |---------|--------------|-----|
 | Extension shows "Desktop app not running" | Desktop app closed or not started | Launch VaultGuard and unlock |
-| "Native host not registered" | Registry keys missing | Run `extension/native-host/install-host.bat` |
+| "Native host not registered" | Registry keys missing | Open Settings → Extension → click **Set Extension ID** (or run `extension/native-host/install-host.bat`) |
 | Installer fails with `d3dcompiler_47.dll` access denied | `VaultGuard.exe` still running | `taskkill /F /IM VaultGuard.exe` then rebuild |
 | Auto-fill not working | Extension not connected / content script not injected | Reload extension; check DevTools console for errors |
 | Windows Hello unavailable | Not on Windows 10/11, or no biometric hardware | Use master password; Hello is optional |
@@ -299,7 +299,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## Support
 
-- **Issues:** [GitHub Issues](https://github.com/your-org/vaultguard/issues)
+- **Issues:** [GitHub Issues](https://github.com/Sherozabdulghaffar/vaultguard/issues)
 - **Security:** Report vulnerabilities privately via [security@vaultguard.example](mailto:security@vaultguard.example) (or GitHub Security Advisories)
 
 ---
