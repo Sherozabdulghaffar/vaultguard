@@ -40,10 +40,17 @@
       <!-- Entries the extension holds itself still work while the app is closed. -->
       <div id="offline-section" class="section offline-section hidden">
         <div class="section-header">
-          <h3>Saved in this browser</h3>
+          <h3>Available offline</h3>
           <span id="offline-count" class="count">0</span>
         </div>
-        <div id="offline-list" class="credential-list"></div>
+        <div id="offline-password-section" class="subsection hidden">
+          <div class="subsection-header"><h4>Passwords</h4><span id="offline-password-count" class="count">0</span></div>
+          <div id="offline-password-list" class="credential-list"></div>
+        </div>
+        <div id="offline-totp-section" class="subsection hidden">
+          <div class="subsection-header"><h4>2FA codes</h4><span id="offline-totp-count" class="count">0</span></div>
+          <div id="offline-list" class="credential-list"></div>
+        </div>
       </div>
     </div>
 

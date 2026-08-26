@@ -121,6 +121,10 @@ export type MessageType =
   | 'BIOMETRIC_UNLOCK'
   | 'BIOMETRIC_REGISTER'
   | 'SHOW_WINDOW'
+  /** Sync: pull full vault state for the extension's local mirror. */
+  | 'SYNC_PULL'
+  /** Sync: push extension changes (creates/updates/deletes) into the vault. */
+  | 'SYNC_PUSH'
   /** Handshake: the extension sends this first and expects HELLO back. */
   | 'HELLO'
   /** Cheap liveness probe used by the extension's health check. */

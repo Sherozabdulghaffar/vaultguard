@@ -52,6 +52,98 @@ const SESSION_STATE_KEY = 'bridgeState';
 const PAIRING_KEY = 'pairing';
 const LOCAL_ENTRIES_KEY = 'totpEntries';
 
+// --- Vault mirror (offline copy of desktop vault) ----------------------
+
+/**
+ * The vault mirror is a local copy of the desktop vault's TOTP entries and
+ * passwords. It lets the extension generate 2FA codes and auto-fill passwords
+ * even when the desktop app is not running. The mirror is refreshed on every
+ * successful connection and also used as a fallback when the bridge is down.
+ */
+const VAULT_MIRROR_KEY = 'vaultMirror';
+const PENDING_SYNC_KEY = 'pendingSync';
+
+async function getVaultMirror() {
+  try {
+    const data = await chrome.storage.local.get(VAULT_MIRROR_KEY);
+    const mirror = data?.[VAULT_MIRROR_KEY];
+    if (mirror && typeof mirror === 'object') return mirror;
+  } catch { /* ignore */ }
+  return { totpEntries: [], passwords: [], epoch: 0, lastSyncAt: 0 };
+}
+
+async function saveVaultMirror(mirror) {
+  try {
+    await chrome.storage.local.set({ [VAULT_MIRROR_KEY]: mirror });
+  } catch { /* ignore */ }
+}
+
+async function getPendingSync() {
+  try {
+    const data = await chrome.storage.local.get(PENDING_SYNC_KEY);
+    const pending = data?.[PENDING_SYNC_KEY];
+    if (pending && typeof pending === 'object') return pending;
+  } catch { /* ignore */ }
+  return { creates: [], updates: [], deletes: [] };
+}
+
+async function savePendingSync(pending) {
+  try {
+    await chrome.storage.local.set({ [PENDING_SYNC_KEY]: pending });
+  } catch { /* ignore */ }
+}
+
+/**
+ * Full sync cycle: push pending changes to the desktop vault, then pull the
+ * fresh state back. Only runs when the bridge is ready and the vault is unlocked.
+ */
+let syncInFlight = null;
+async function runSync() {
+  if (!bridge.ready || !bridge.isUnlocked) return null;
+  if (syncInFlight) return syncInFlight;
+
+  syncInFlight = (async () => {
+    try {
+      // 1. Push pending local changes.
+      const pending = await getPendingSync();
+      if (pending.creates.length || pending.updates.length || pending.deletes.length) {
+        try {
+          const pushResult = await sendBridge('SYNC_PUSH', {
+            totpEntries: [...pending.creates, ...pending.updates],
+            passwords: [],
+            deletedTotpIds: pending.deletes,
+            deletedPasswordIds: [],
+          });
+          if (pushResult) {
+            // Clear pending after a successful push.
+            await savePendingSync({ creates: [], updates: [], deletes: [] });
+          }
+        } catch (pushErr) {
+          console.warn('Sync push failed:', pushErr?.message);
+        }
+      }
+
+      // 2. Pull full vault state.
+      const pullResult = await sendBridge('SYNC_PULL');
+      if (pullResult) {
+        const mirror = {
+          totpEntries: Array.isArray(pullResult.totpEntries) ? pullResult.totpEntries : [],
+          passwords: Array.isArray(pullResult.passwords) ? pullResult.passwords : [],
+          epoch: pullResult.epoch || 0,
+          lastSyncAt: Date.now(),
+        };
+        await saveVaultMirror(mirror);
+        return mirror;
+      }
+    } catch (err) {
+      console.warn('Sync failed:', err?.message);
+    }
+    return null;
+  })().finally(() => { syncInFlight = null; });
+
+  return syncInFlight;
+}
+
 const AUTO_FILL_COOLDOWN_MS = 30000;
 
 // --- Bridge state ------------------------------------------------------
@@ -194,6 +286,11 @@ function absorb(payload) {
   if (badgeStale) {
     updateBadge();
     persistSession();
+  }
+
+  // Trigger sync when vault becomes unlocked.
+  if (bridge.ready && bridge.isUnlocked) {
+    runSync().catch(() => {});
   }
 }
 
@@ -390,6 +487,11 @@ function markConnected(transport, hello) {
   chrome.alarms.clear(RETRY_ALARM);
   updateBadge();
   persistSession();
+
+  // Auto-sync when the bridge comes up and the vault is already unlocked.
+  if (bridge.isUnlocked) {
+    runSync().catch(() => {});
+  }
 }
 
 function markDisconnected(reason) {
@@ -628,6 +730,12 @@ async function saveLocalEntry(input) {
   };
   entries.push(entry);
   await chrome.storage.local.set({ [LOCAL_ENTRIES_KEY]: entries });
+
+  // Queue for sync so this entry gets pushed to the vault on next connect.
+  const pending = await getPendingSync();
+  pending.creates = [...(pending.creates || []), entry];
+  await savePendingSync(pending);
+
   return entry;
 }
 
@@ -739,6 +847,7 @@ async function entriesForUrl(url) {
     connected: false,
     needsPairing: false,
     error: null,
+    synced: false,
   };
 
   try {
@@ -755,6 +864,19 @@ async function entriesForUrl(url) {
     result.needsPairing = err?.code === 'NEEDS_PAIRING';
     result.connected = bridge.ready;
     result.error = err?.message || null;
+
+    // Fall back to the vault mirror for desktop entries when offline.
+    if (!result.connected || result.locked) {
+      const mirror = await getVaultMirror();
+      if (mirror.totpEntries.length || mirror.passwords.length) {
+        result.synced = true;
+        result.totpEntries = mirror.totpEntries
+          .filter((e) => matchesUrl(e, url))
+          .map((e) => ({ ...e, origin: 'desktop' }));
+        result.passwords = mirror.passwords
+          .filter((p) => matchesPasswordUrl(p, url));
+      }
+    }
   }
 
   const local = await findLocalEntriesForUrl(url);
@@ -767,7 +889,52 @@ async function entriesForUrl(url) {
     }
   }
 
+  // Generate codes for all TOTP entries (desktop mirror + local).
+  for (const entry of result.totpEntries) {
+    if (!result.codes.find((c) => c.id === entry.id)) {
+      try {
+        result.codes.push(await codeForEntry(entry));
+      } catch {
+        // Skip entries that fail code generation.
+      }
+    }
+  }
+
   return result;
+}
+
+/** Match a vault TOTP entry against a URL using domain comparison. */
+function matchesUrl(entry, url) {
+  if (!url) return true;
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    if (entry.uri) {
+      const entryHost = new URL(entry.uri.replace('otpauth://', 'https://')).hostname.toLowerCase();
+      if (hostname.includes(entryHost) || entryHost.includes(hostname)) return true;
+    }
+    if (entry.issuer) {
+      const issuer = entry.issuer.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (hostname.replace(/[^a-z0-9]/g, '').includes(issuer)) return true;
+    }
+    if (entry.domains?.length) {
+      for (const d of entry.domains) {
+        if (hostname.includes(d.toLowerCase())) return true;
+      }
+    }
+  } catch { /* ignore */ }
+  return false;
+}
+
+/** Match a vault password entry against a URL using domain comparison. */
+function matchesPasswordUrl(password, url) {
+  if (!password.url || !url) return false;
+  try {
+    const domain = new URL(url).hostname.toLowerCase();
+    const pDomain = new URL(password.url).hostname.toLowerCase();
+    return domain === pDomain || domain.endsWith('.' + pDomain) || pDomain.endsWith('.' + domain);
+  } catch {
+    return false;
+  }
 }
 
 // --- QR / otpauth handling --------------------------------------------
@@ -1022,6 +1189,10 @@ async function handleMessage(message, sender) {
       bridge.isUnlocked = !!result?.success;
       updateBadge();
       persistSession();
+      // Trigger sync after unlock to populate/update the vault mirror.
+      if (result?.success) {
+        runSync().catch(() => {});
+      }
       return result;
     }
 
@@ -1055,6 +1226,9 @@ async function handleMessage(message, sender) {
       bridge.isUnlocked = !!result?.success;
       updateBadge();
       persistSession();
+      if (result?.success) {
+        runSync().catch(() => {});
+      }
       return result;
     }
 
@@ -1069,7 +1243,7 @@ async function handleMessage(message, sender) {
       return entriesForUrl(message.url);
 
     case 'GET_ALL_TOTP_ENTRIES': {
-      const out = { entries: [], codes: [], locked: false, connected: false, error: null };
+      const out = { entries: [], codes: [], locked: false, connected: false, error: null, synced: false };
       try {
         const remote = await sendBridge('GET_TOTP');
         out.connected = true;
@@ -1079,6 +1253,15 @@ async function handleMessage(message, sender) {
         out.locked = err?.code === 'VAULT_LOCKED';
         out.connected = bridge.ready;
         out.error = err?.message || null;
+
+        // Fall back to vault mirror when offline.
+        if (!out.connected || out.locked) {
+          const mirror = await getVaultMirror();
+          if (mirror.totpEntries.length) {
+            out.synced = true;
+            out.entries = mirror.totpEntries.map((e) => ({ ...e, origin: 'desktop' }));
+          }
+        }
       }
       for (const entry of await getLocalEntries()) {
         out.entries.push({ ...entry, origin: 'local' });
@@ -1119,6 +1302,12 @@ async function handleMessage(message, sender) {
 
     case 'DELETE_LOCAL_TOTP_ENTRY':
       await deleteLocalEntry(message.id);
+      // Also queue for sync when desktop reconnects.
+      if (message.id && !String(message.id).startsWith('local_')) {
+        const pending = await getPendingSync();
+        pending.deletes = [...(pending.deletes || []), message.id];
+        await savePendingSync(pending);
+      }
       return { success: true };
 
     case 'SAVE_TOTP_FROM_QR':
@@ -1135,10 +1324,43 @@ async function handleMessage(message, sender) {
       // Move extension-owned entries into the vault once it is open.
       const entries = await getLocalEntries();
       if (!entries.length) return { success: true, moved: 0 };
-      const saved = await sendBridge('SAVE_TOTP', { entries });
-      if (!saved?.success) throw new Error('The desktop app did not accept the entries');
+      const saved = await sendBridge('SYNC_PUSH', { totpEntries: entries, passwords: [] });
+      if (!saved?.success && !saved?.totpEntries) {
+        // Fallback to old SAVE_TOTP if SYNC_PUSH not supported.
+        const legacy = await sendBridge('SAVE_TOTP', { entries });
+        if (!legacy?.success) throw new Error('The desktop app did not accept the entries');
+        await chrome.storage.local.set({ [LOCAL_ENTRIES_KEY]: [] });
+        return { success: true, moved: legacy.entries?.length || entries.length };
+      }
       await chrome.storage.local.set({ [LOCAL_ENTRIES_KEY]: [] });
-      return { success: true, moved: saved.entries?.length || entries.length };
+      return { success: true, moved: saved.savedTotpCount || saved.totpEntries?.length || entries.length };
+    }
+
+    // --- vault mirror / sync ---
+    case 'GET_VAULT_MIRROR': {
+      const mirror = await getVaultMirror();
+      return { mirror, connected: bridge.ready, unlocked: bridge.isUnlocked };
+    }
+
+    case 'SYNC_NOW': {
+      const mirror = await runSync();
+      if (!mirror) {
+        return { success: false, error: bridge.ready ? 'Vault is locked' : 'Desktop app not connected' };
+      }
+      return { success: true, totpCount: mirror.totpEntries.length, passwordCount: mirror.passwords.length };
+    }
+
+    case 'GET_SYNC_STATUS': {
+      const pending = await getPendingSync();
+      const mirror = await getVaultMirror();
+      return {
+        connected: bridge.ready,
+        unlocked: bridge.isUnlocked,
+        syncedEntries: mirror.totpEntries.length + mirror.passwords.length,
+        lastSyncAt: mirror.lastSyncAt || 0,
+        epoch: mirror.epoch || 0,
+        pendingChanges: (pending.creates?.length || 0) + (pending.updates?.length || 0) + (pending.deletes?.length || 0),
+      };
     }
 
     // --- page interaction ---

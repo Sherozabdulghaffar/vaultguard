@@ -172,8 +172,12 @@ async function refreshStatus() {
   }
 
   if (!status.connected) {
-    el('disconnected-reason').textContent =
-      status.error || 'Start VaultGuard on this computer, then try again.';
+    // Check if we have offline data available.
+    const { mirror } = await send({ type: 'GET_VAULT_MIRROR' });
+    const hasOfflineData = (mirror?.totpEntries?.length || 0) + (mirror?.passwords?.length || 0) > 0;
+    el('disconnected-reason').textContent = hasOfflineData
+      ? 'Desktop app offline — showing last synced data'
+      : status.error || 'Start VaultGuard on this computer, then try again.';
     await renderOfflineEntries();
     showScreen('disconnected');
     return;
@@ -194,22 +198,74 @@ async function refreshStatus() {
 
 /** Extension-owned entries stay usable with the desktop app closed. */
 async function renderOfflineEntries() {
-  const { entries } = await send({ type: 'GET_LOCAL_TOTP_ENTRIES' });
-  const list = Array.isArray(entries) ? entries : [];
-  const section = el('offline-section');
+  // Check if we have a vault mirror (synced copy of the desktop vault).
+  const { mirror } = await send({ type: 'GET_VAULT_MIRROR' });
+  const { entries: localEntries } = await send({ type: 'GET_LOCAL_TOTP_ENTRIES' });
 
-  if (!list.length) {
+  const mirrorTotp = Array.isArray(mirror?.totpEntries) ? mirror.totpEntries : [];
+  const mirrorPasswords = Array.isArray(mirror?.passwords) ? mirror.passwords : [];
+  const local = Array.isArray(localEntries) ? localEntries : [];
+
+  // Merge mirror desktop entries with local extension entries.
+  const allTotp = [
+    ...mirrorTotp.map((e) => ({ ...e, origin: 'desktop' })),
+    ...local.map((e) => ({ ...e, origin: 'local' })),
+  ];
+
+  const total = allTotp.length + mirrorPasswords.length;
+  const section = el('offline-section');
+  if (!total) {
     section.classList.add('hidden');
     return;
   }
-
   section.classList.remove('hidden');
-  el('offline-count').textContent = String(list.length);
-  totpEntries = list.map((entry) => ({ ...entry, origin: 'local' }));
-  codes.clear();
-  renderTotpList(el('offline-list'));
-  await refreshCodes(totpEntries);
-  startTicker();
+  el('offline-count').textContent = String(total);
+
+  // Passwords subsection.
+  const pwSection = el('offline-password-section');
+  if (mirrorPasswords.length) {
+    pwSection.classList.remove('hidden');
+    el('offline-password-count').textContent = String(mirrorPasswords.length);
+    renderOfflinePasswords(mirrorPasswords);
+  } else {
+    pwSection.classList.add('hidden');
+  }
+
+  // 2FA codes subsection.
+  const totpSection = el('offline-totp-section');
+  if (allTotp.length) {
+    totpSection.classList.remove('hidden');
+    el('offline-totp-count').textContent = String(allTotp.length);
+    totpEntries = allTotp;
+    codes.clear();
+    renderTotpList(el('offline-list'));
+    await refreshCodes(totpEntries);
+    startTicker();
+  } else {
+    totpSection.classList.add('hidden');
+  }
+}
+
+function renderOfflinePasswords(list) {
+  const container = el('offline-password-list');
+  container.textContent = '';
+  for (const entry of list) {
+    const card = document.createElement('div');
+    card.className = 'credential-card';
+    card.innerHTML = `
+      <div class="cred-avatar">${escapeHtml(avatarLetter(entry.title, entry.username))}</div>
+      <div class="cred-info">
+        <div class="cred-title">${escapeHtml(entry.title)}</div>
+        <div class="cred-subtitle">${escapeHtml(entry.username || entry.url || '')}</div>
+      </div>
+      <button class="copy-btn" data-password="${escapeHtml(entry.password)}" title="Copy password">📋</button>
+    `;
+    card.querySelector('.copy-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      copy(entry.password, 'Password copied');
+    });
+    container.appendChild(card);
+  }
 }
 
 // --- Unlock -----------------------------------------------------------
@@ -571,7 +627,9 @@ async function loadEntries() {
   renderTotpList(el('totp-list'));
 
   const total = passwords.length + totpEntries.length;
-  if (result.error && !total) setPageStatus('none', result.error);
+  if (result.synced) {
+    setPageStatus('ok', `Offline — ${total} item${total === 1 ? '' : 's'} from last sync`);
+  } else if (result.error && !total) setPageStatus('none', result.error);
   else if (total) setPageStatus('ok', `${total} match${total === 1 ? '' : 'es'} for this site`);
   else setPageStatus('none', 'Nothing saved for this site');
 

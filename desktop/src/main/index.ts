@@ -1931,6 +1931,116 @@ function handleBridgeMessage(message: NativeMessage, extensionId?: string): Nati
         }
       }
 
+      // --- Sync: pull full vault state for the extension's local mirror ---
+      case 'SYNC_PULL': {
+        if (!isUnlocked) return fail('Vault is locked', 'VAULT_LOCKED');
+        const now = Date.now();
+        const totpEntries = db.getTotpEntries();
+        const passwords = db.getPasswords();
+        return ok({
+          totpEntries,
+          passwords,
+          epoch: vaultEpoch,
+          serverTime: now,
+        });
+      }
+
+      // --- Sync: push extension changes into the vault ---
+      case 'SYNC_PUSH': {
+        if (!isUnlocked) return fail('Vault is locked', 'VAULT_LOCKED');
+        const payload = message.payload || {};
+
+        // Delete requested entries first.
+        for (const id of payload.deletedTotpIds || []) {
+          db.deleteTotpEntry(id);
+        }
+        for (const id of payload.deletedPasswordIds || []) {
+          db.deletePassword(id);
+        }
+
+        // Upsert TOTP entries.
+        const savedTotp: any[] = [];
+        for (const entry of payload.totpEntries || []) {
+          if (!entry?.secret) continue;
+          const check = validateTotpSecret(entry.secret, entry.encoding);
+          if (!check.valid) continue;
+
+          if (entry.id) {
+            const updated = db.updateTotpEntry(entry.id, {
+              title: entry.title,
+              issuer: entry.issuer,
+              account: entry.account,
+              secret: entry.secret,
+              algorithm: entry.algorithm,
+              digits: entry.digits,
+              period: entry.period,
+              counter: entry.counter,
+              type: entry.type,
+              uri: entry.uri,
+              encoding: entry.encoding,
+              steam: entry.steam,
+            });
+            if (updated) savedTotp.push(updated);
+          } else {
+            const created = db.addTotpEntry(
+              normalizeTotpEntry({
+                title: entry.title || entry.issuer || entry.account || 'Synced',
+                issuer: entry.issuer,
+                account: entry.account,
+                secret: entry.secret,
+                type: entry.type === 'HOTP' ? 'HOTP' : 'TOTP',
+                algorithm: entry.algorithm,
+                digits: entry.digits,
+                period: entry.period,
+                counter: entry.counter,
+                encoding: entry.encoding,
+                steam: entry.steam,
+              }) as Omit<TwoFactorEntry, 'id' | 'createdAt' | 'updatedAt'>
+            );
+            savedTotp.push(created);
+          }
+        }
+
+        // Upsert password entries.
+        const savedPw: any[] = [];
+        for (const entry of payload.passwords || []) {
+          if (!entry?.password) continue;
+          if (entry.id) {
+            const updated = db.updatePassword(entry.id, {
+              title: entry.title,
+              username: entry.username,
+              password: entry.password,
+              url: entry.url,
+              notes: entry.notes,
+              category: entry.category,
+            });
+            if (updated) savedPw.push(updated);
+          } else {
+            const created = db.addPassword({
+              title: entry.title || 'Synced password',
+              username: entry.username || '',
+              password: entry.password,
+              url: entry.url,
+              notes: entry.notes,
+              category: entry.category,
+            });
+            savedPw.push(created);
+          }
+        }
+
+        resetAutoLockTimer();
+        bumpVaultEpoch();
+        const now2 = Date.now();
+        return ok({
+          totpEntries: db.getTotpEntries(),
+          passwords: db.getPasswords(),
+          epoch: vaultEpoch,
+          serverTime: now2,
+          savedTotpCount: savedTotp.length,
+          savedPasswordCount: savedPw.length,
+        });
+      }
+
       case 'SHOW_WINDOW':
         if (mainWindow) {
           if (mainWindow.isMinimized()) mainWindow.restore();

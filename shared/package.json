@@ -31,8 +31,9 @@
     "qrcode": "^1.5.3"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
     "@types/node": "^20.11.0",
-    "@types/qrcode": "^1.5.5"
+    "@types/qrcode": "^1.5.5",
+    "7zip-bin-win": "^2.2.0",
+    "typescript": "^5.3.3"
   }
 }
